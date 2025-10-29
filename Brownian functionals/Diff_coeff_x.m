@@ -1,5 +1,5 @@
 %Equivalence between Langevin and heterogeneous diffusion
-%g1 e g2 devi taglaire a 70
+%g1 e g2 devi tagliare a 70
 %g3 devi tagliare a 100 (CON FD rule)
 
 tic
