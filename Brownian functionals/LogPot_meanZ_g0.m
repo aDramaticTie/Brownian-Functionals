@@ -1,0 +1,77 @@
+%Average Z, Brownian motion in log potential in an interval (a,b)
+%You need very small dt (1e-5), otherwise the numerical result is
+%overestimated. You also need 1e4 paths.
+%Here I consider only g=0
+
+tic
+clear
+clc
+close all
+set(groot,'defaultAxesTickLabelInterpreter','latex');
+set(groot,'defaultLegendInterpreter','latex');
+set(groot,'defaultAxesFontSize',18);
+pos=[0.12 0.12 0.85 0.83];
+
+N=1e4; %number of paths
+dt=1e-5;
+NT=1e6; %number of time steps
+T=dt*NT;
+U=-6;
+D=1;
+e=U/(2*D);
+bb=1+2*e;
+a=0.5;
+b=2.5;
+
+%define a vector of starting points
+ns=10;
+x0=linspace(a,b,ns+2);
+x0=x0(2:ns+1);
+m=zeros(1,numel(x0));
+st=m;
+
+Z=zeros(1,N);
+for k=1:numel(x0)
+    Z=zeros(1,N);
+    for j=1:N
+        %evolves the trajectory
+        x=x0(k);
+        tmp=0;
+        res=0;
+        for i=1:NT
+            %We use the weak order 2 Runge-Kutta method
+            dy=-U/x*dt+sqrt(2*D*dt)*randn;
+            y=x+dy;
+            dx=0.5*(-U/y-U/x)*dt+sqrt(2*D*dt)*randn;
+            x=x+dx;
+            %---if you use
+            %---x=x+sqrt(D*dt)*randn;
+            %---then the theoretical pdf is
+            %---1/sqrt(2*pi*D*T)*exp(-x.^2/(2*D*T))
+            if x<a || x>b
+                res=tmp;
+                break
+            end
+            tmp=tmp+dt*(x-dx/2)^(-2);
+        end
+        Z(j)=res;
+    end
+    Z=Z(Z~=0);
+    m(k)=mean(Z);
+    st(k)=std(Z);
+end
+xx0=linspace(a,b,1000);
+mth=1/(D*bb)/(b^bb-a^bb)*((b^bb-xx0.^bb).*log(xx0/a)-(xx0.^bb-a^bb).*log(b./xx0));
+if e==-0.5
+    mth=1/(2*D).*log(b./xx0).*log(xx0/a);
+end
+
+figure(1)
+plot(xx0,mth,'-g','linewidth',2);
+hold on
+plot(x0,m,'^k','Markersize',7,'Markerfacecolor','g');
+xlabel('$x_0$','fontsize',21.5,'interpreter','latex');
+ylabel('$\langle\mathcal{Z}\rangle$','fontsize',21.5,'interpreter','latex');
+set(gca,'position',pos);
+
+toc
